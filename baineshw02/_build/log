@@ -1,0 +1,5 @@
+# dune init project baineshw02
+# OCAMLPARAM: unset
+# Shared cache: disabled
+# Workspace root: /Users/davidbaines/GitHub/csci5535-hw02/baineshw02
+# Auto-detected concurrency: 16

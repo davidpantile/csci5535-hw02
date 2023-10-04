@@ -1,0 +1,4 @@
+(executable
+ (public_name baineshw02)
+ (name main)
+ (libraries baineshw02))
