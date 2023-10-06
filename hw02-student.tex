@@ -25,7 +25,12 @@
   {}
 
 \title{CSCI 5535: Homework Assignment 2: Language Design and Implementation}
-\author{YOUR NAME\thanks{YOUR COLLABORATORS AND ACKNOWLEDGMENTS}}
+\author{
+    David Baines
+    \thanks{https://courses.cs.cornell.edu/cs412/2004sp/lectures/lec13.pdf}
+    \thanks{https://csci3155.cs.colorado.edu/csci3155-notes.pdf}
+    \thanks{https://www.hedonisticlearning.com/posts/understanding-typing-judgments.html}
+}
 
 %% Number questions by section
 \renewcommand{\thequestion}{\thesection.\arabic{question}}
@@ -107,6 +112,12 @@
 
 \newcommand{\even}{\operatorname{even}}
 
+%%%%%%%%%%%%%%
+% Baines custom commands
+%%%%%%%%%%%%%%
+
+\newcommand{\mycomment}[1]{}
+
 \pagestyle{plain}
 \begin{document}
 \maketitle
@@ -114,7 +125,429 @@
 \section{Language Design: \IMP}
 
 \begin{questions}
-  \question
+  \question The two judgment forms (one for expressions, the other for functions / commands, respectively \expr \; and \cmd \; in \IMP, are:
+
+\mycomment{
+
+    \begin{mathpar}
+    \inferrule{
+        \Gamma , \hasType{x_1}{\tau_1} \vdash \hasType{e_2}{\tau_2} \\
+        \Gamma , \hasType{\cmd(\tau_1)}{\tau_2} \vdash \hasType{e}{\tau}
+    }{
+        \Gamma \vdash \texttt{fun}[\tau_1;\tau_2] \hasType{(x_1.e_2; f.e)}{\tau}
+    }
+
+    \inferrule{
+        \Gamma \vdash \hasType{c(\tau_1)}{\tau_2} \\
+        \Gamma \vdash \hasType{e}{\tau_1}
+    }{
+        \Gamma \vdash \texttt{call}[c] \hasType{(e)}{\tau_2}
+    }
+    \end{mathpar}
+
+}
+
+For $e$:
+
+\begin{mathpar}
+    \inferrule{
+    }{
+        \Gamma \vdash \hasType{\addra{a}}{\numtyp}
+    }
+    
+    \inferrule{
+    }{
+        \Gamma \vdash \hasType{\numa{n}}{\numtyp}
+    }
+    
+    \inferrule{
+    }{
+        \Gamma \vdash \hasType{\boola{b}}{\booltyp}
+    }
+
+    \inferrule{
+        \Gamma \vdash \hasType{e_1}{\numtyp} \\ 
+        \Gamma \vdash \hasType{e_2}{\numtyp}
+    }{
+        \Gamma \vdash \hasType{\plusa{e_1}{e_2}}{\numtyp}
+    }
+
+    \inferrule{
+        \Gamma \vdash \hasType{e_1}{\numtyp} \\ 
+        \Gamma \vdash \hasType{e_2}{\numtyp}
+    }{
+        \Gamma \vdash \hasType{\timesa{e_1}{e_2}}{\numtyp}
+    }
+
+    \inferrule{
+        \Gamma \vdash \hasType{e_1}{\numtyp} \\ 
+        \Gamma \vdash \hasType{e_2}{\numtyp}
+    }{
+        \Gamma \vdash \hasType{\eqa{e_1}{e_2}}{\booltyp}
+    }
+
+    \inferrule{
+        \Gamma \vdash \hasType{e_1}{\booltyp} \\ 
+        \Gamma \vdash \hasType{e_2}{\booltyp}
+    }{
+        \Gamma \vdash \hasType{\eqa{e_1}{e_2}}{\booltyp}
+    }
+
+    \inferrule{
+        \Gamma \vdash \hasType{e_1}{\numtyp} \\ 
+        \Gamma \vdash \hasType{e_2}{\numtyp}
+    }{
+        \Gamma \vdash \hasType{\lea{e_1}{e_2}}{\booltyp}
+    }
+
+    \inferrule{
+        \Gamma \vdash \hasType{e}{\numtyp}
+    }{
+        \Gamma \vdash \hasType{\nota{e}}{\booltyp}
+    }
+
+    \inferrule{
+        \Gamma \vdash \hasType{e}{\booltyp}
+    }{
+        \Gamma \vdash \hasType{\nota{e}}{\booltyp}
+    }
+
+    \inferrule{
+        \Gamma \vdash \hasType{e_1}{\booltyp} \\
+        \Gamma \vdash \hasType{e_2}{\booltyp}
+    }{
+        \Gamma \vdash \hasType{\anda{e_1}{e_2}}{\booltyp}
+    }
+
+    \inferrule{
+        \Gamma \vdash \hasType{e_1}{\booltyp} \\
+        \Gamma \vdash \hasType{e_2}{\booltyp}
+    }{
+        \Gamma \vdash \hasType{\ora{e_1}{e_2}}{\booltyp}
+    }
+  
+\end{mathpar}
+
+    For $c$:
+
+\begin{mathpar}
+    \inferrule{
+        \Gamma \vdash \hasType{e}{\booltyp}
+    }{
+        \Gamma \vdash \hasType{\nota{e}}{\booltyp}
+    }
+\end{mathpar}
+
+    \question
+    \begin{itemize}
+        \item[(a)] 
+        
+        For the evals:
+        
+        \begin{mathpar}
+        
+
+            \inferrule{ }{\addra{a} \isVal{}}
+
+            \inferrule{ }{\numa{n} \isVal{}}
+            
+            \inferrule{ }{\boola{b} \isVal{}}
+            
+            \\\\
+            
+        \end{mathpar}
+            
+For ``plus()'':    
+
+		\begin{mathpar} 
+
+            \inferrule{
+            	n_1 + n_2 = n
+            }{ 
+            	\step{
+            		\plusa{\numa{n_1}}{\numa{n_2}}
+            	}{
+            		\numa{n}
+            	}
+            }
+            
+            \inferrule{
+            	\step{
+            		e_1
+            	}{
+            		e_1^\prime
+            	}
+            }
+            {
+            	\step{
+            		\plusa{e_1}{e_2}
+            	}{
+            		\plusa{e_1^\prime}{e_2}
+            	}
+            }
+
+            \inferrule{
+            	\expr \isVal{} \\
+            	\step{
+            		e_2
+            	}{
+            		e_2^\prime
+            	}
+            }
+            {
+            	\step{
+            		\plusa{e_1}{e_2}
+            	}{
+            		\plusa{e_1}{e_2^\prime}
+            	}
+            }
+            
+      \end{mathpar}
+            
+For ``times()'':     
+
+		\begin{mathpar}
+           
+            \inferrule{
+            	n_1 * n_2 = n
+            }{ 
+            	\step{
+            		\timesa{
+            			\numa{n_1}
+            		}{
+            			\numa{n_2}
+            		}
+            	}{
+            		\numa{n}
+            	}
+            }
+            
+            \inferrule{
+            	\step{
+            		e_1
+            	}{
+            		e_1^\prime
+            	}
+            }
+            {
+            	\step{
+            		\timesa{
+            			e_1
+            		}{
+            			e_2
+            		}
+            	}{
+            		\timesa{e_1^\prime}{e_2}
+            	}
+            }
+
+            \inferrule{
+            	\expr \isVal{} \\
+            	\step{
+            		e_2
+            	}{
+            		e_2^\prime
+            	}
+            }
+            {
+            	\step{
+            		\timesa{e_1}{e_2}
+            	}{
+            		\timesa{e_1}{e_2^\prime}
+            	}
+            }
+            
+      \end{mathpar}
+            
+For ``eq()'':   
+
+		\begin{mathpar}  
+        
+            \inferrule{
+            	n_1 == n_2 \vdash b
+            }{ 
+            	\step{
+            		\eqa{\numa{n_1}}{\numa{n_2}}
+            	}{
+            		\boola{b}
+            	}
+            }
+            
+            \inferrule{
+            	\step{
+            		e_1
+            	}{
+            		e_1^\prime
+            	}
+            }
+            {
+            	\step{
+            		\eqa{e_1}{e_2}
+            	}{
+            		\eqa{e_1^\prime}{e_2}
+            	}
+            }
+
+            \inferrule{
+            	\expr \isVal{} \\
+            	\step{
+            		e_2
+            	}{
+            		e_2^\prime
+            	}
+            }
+            {
+            	\step{
+            		\eqa{e_1}{e_2}
+            	}{
+            		\eqa{e_1}{e_2^\prime}
+            	}
+            }
+            
+     \end{mathpar}
+            
+For ``le()'':  
+
+		\begin{mathpar}   
+      
+            \inferrule{
+            	n_1 <= n_2 \vdash b
+            }{ 
+            	\step{
+            		\lea{\numa{n_1}}{\numa{n_2}}
+            	}{
+            		\boola{b}
+            	}
+            }
+            
+            \inferrule{
+            	\step{
+            		e_1
+            	}{
+            		e_1^\prime
+            	}
+            }
+            {
+            	\step{
+            		\lea{e_1}{e_2}
+            	}{
+            		\lea{e_1^\prime}{e_2}
+            	}
+            }
+
+            \inferrule{
+            	\expr \isVal{} \\
+            	\step{
+            		e_2
+            	}{
+            		e_2^\prime
+            	}
+            }
+            {
+            	\step{
+            		\lea{e_1}{e_2}
+            	}{
+            		\lea{e_1}{e_2^\prime}
+            	}
+            }
+            
+      \end{mathpar}
+            
+For ``not()'':    
+
+
+		\begin{mathpar} 
+   
+            \inferrule{
+            	n_1 ! \; n_2 \; || \;  b_1 ! \; b_2 \vdash b
+            }{ 
+            	\step{
+            		\nota{\numa{n_1}}{\numa{n_2}} \; || \;
+            		\nota{\boola{b_1}}{\boola{b_2}}
+            	}{
+            		\boola{b}
+            	}
+            }
+            
+            \inferrule{
+            	\step{
+            		e_1
+            	}{
+            		e_1^\prime
+            	}
+            }
+            {
+            	\step{
+            		\nota{e_1}{e_2}
+            	}{
+            		\nota{e_1^\prime}{e_2}
+            	}
+            }
+
+            \inferrule{
+            	\expr \isVal{} \\
+            	\step{
+            		e_2
+            	}{
+            		e_2^\prime
+            	}
+            }
+            {
+            	\step{
+            		\nota{e_1}{e_2}
+            	}{
+            		\nota{e_1}{e_2^\prime}
+            	}
+            }
+            
+       \end{mathpar}
+            
+For ``and()'':
+
+		\begin{mathpar}
+         
+            \inferrule{
+            	b_1 \; \&\& \; b_2 \vdash b
+            }{ 
+            	\step{
+            		\anda{\boola{b_1}}{\boola{b_2}}
+            	}{
+            		\boola{b}
+            	}
+            }
+            
+            \inferrule{
+            	\step{
+            		e_1
+            	}{
+            		e_1^\prime
+            	}
+            }
+            {
+            	\step{
+            		\nota{e_1}{e_2}
+            	}{
+            		\nota{e_1^\prime}{e_2}
+            	}
+            }
+
+            \inferrule{
+            	\expr \isVal{} \\
+            	\step{
+            		e_2
+            	}{
+            		e_2^\prime
+            	}
+            }
+            {
+            	\step{
+            		\nota{e_1}{e_2}
+            	}{
+            		\nota{e_1}{e_2^\prime}
+            	}
+            }
+        \end{mathpar}
+    \end{itemize}
 \end{questions}
 
 \section{Language Implementation: \ETPS}
@@ -171,4 +604,4 @@ See \texttt{hw02.ml} and \texttt{test\_hw02.ml}.
 \Addr & \addr
 \end{array}\]
 
-\end{document}
+\end{document}\\
