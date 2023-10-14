@@ -147,7 +147,7 @@
 
 }
 
-For $e$:
+For $\expr$:
 
 \begin{mathpar}
     \inferrule{
@@ -228,21 +228,44 @@ For $e$:
   
 \end{mathpar}
 
-    For $c$:
+    For $\cmd$:
 
 \begin{mathpar}
     \inferrule{
-        \Gamma \vdash \hasType{e}{\booltyp}
+        \Gamma \vdash \hasType{a}{\numtyp} \\ 
+        \Gamma \vdash \hasType{e}{\typ}
     }{
-        \Gamma \vdash \hasType{\nota{e}}{\booltyp}
+        \Gamma \vdash \hasType{\seta{a}{e}}{\numtyp}
+    }
+
+    \inferrule{
+        \Gamma \vdash \hasType{\cmd_1}{\typ} \\ 
+        \Gamma \vdash \hasType{\cmd_2}{\typ}
+    }{
+        \Gamma \vdash \hasType{\seqa{\cmd_1}{\cmd_2}}{\typ}
+    }
+
+    \inferrule{
+        \Gamma \vdash \hasType{\expr}{\booltyp} \\
+        \Gamma \vdash \hasType{\cmd_1}{\typ} \\ 
+        \Gamma \vdash \hasType{\cmd_2}{\typ}
+    }{
+        \Gamma \vdash \hasType{\ifa{\expr}{\cmd_1}{\cmd_2}}{\typ}
+    }
+
+    \inferrule{
+        \Gamma \vdash \hasType{\expr}{\booltyp} \\
+        \Gamma \vdash \hasType{\cmd}{\typ} \\ 
+    }{
+        \Gamma \vdash \hasType{\whilea{\expr}{\cmd}}{\typ}
     }
 \end{mathpar}
 
     \question
     \begin{itemize}
-        \item[(a)] 
+        \item[(a)] Define values and commands. \\
         
-        For the evals:
+        For ``$\expr \isVal{}$'':
         
         \begin{mathpar}
         
@@ -257,9 +280,9 @@ For $e$:
             
         \end{mathpar}
             
-For ``plus()'':    
+        ``plus()'':    
 
-		\begin{mathpar} 
+	\begin{mathpar} 
 
             \inferrule{
             	n_1 + n_2 = n
@@ -302,11 +325,11 @@ For ``plus()'':
             	}
             }
             
-      \end{mathpar}
+        \end{mathpar}
             
-For ``times()'':     
+        ``times()'':     
 
-		\begin{mathpar}
+	\begin{mathpar}
            
             \inferrule{
             	n_1 * n_2 = n
@@ -357,11 +380,11 @@ For ``times()'':
             	}
             }
             
-      \end{mathpar}
+        \end{mathpar}
             
-For ``eq()'':   
+        ``eq()'':   
 
-		\begin{mathpar}  
+	\begin{mathpar}  
         
             \inferrule{
             	n_1 == n_2 \vdash b
@@ -404,11 +427,11 @@ For ``eq()'':
             	}
             }
             
-     \end{mathpar}
+        \end{mathpar}
             
-For ``le()'':  
+        ``le()'':  
 
-		\begin{mathpar}   
+	\begin{mathpar}   
       
             \inferrule{
             	n_1 <= n_2 \vdash b
@@ -451,12 +474,11 @@ For ``le()'':
             	}
             }
             
-      \end{mathpar}
+        \end{mathpar}
             
-For ``not()'':    
+        ``not()'':    
 
-
-		\begin{mathpar} 
+        \begin{mathpar} 
    
             \inferrule{
             	n_1 ! \; n_2 \; || \;  b_1 ! \; b_2 \vdash b
@@ -502,12 +524,12 @@ For ``not()'':
             
        \end{mathpar}
             
-For ``and()'':
+        ``and()'':
 
-		\begin{mathpar}
+	\begin{mathpar}
          
             \inferrule{
-            	b_1 \; \&\& \; b_2 \vdash b
+            	b_1 \; \land \; b_2 \vdash b
             }{ 
             	\step{
             		\anda{\boola{b_1}}{\boola{b_2}}
@@ -525,9 +547,9 @@ For ``and()'':
             }
             {
             	\step{
-            		\nota{e_1}{e_2}
+            		\anda{e_1}{e_2}
             	}{
-            		\nota{e_1^\prime}{e_2}
+            		\anda{e_1^\prime}{e_2}
             	}
             }
 
@@ -541,23 +563,566 @@ For ``and()'':
             }
             {
             	\step{
-            		\nota{e_1}{e_2}
+            		\anda{e_1}{e_2}
             	}{
-            		\nota{e_1}{e_2^\prime}
+            		\anda{e_1}{e_2^\prime}
             	}
             }
         \end{mathpar}
+
+        ``or()'':
+
+	\begin{mathpar}
+         
+            \inferrule{
+            	b_1 \; \lor \; b_2 \vdash b
+            }{ 
+            	\step{
+            		\ora{\boola{b_1}}{\boola{b_2}}
+            	}{
+            		\boola{b}
+            	}
+            }
+            
+            \inferrule{
+            	\step{
+            		e_1
+            	}{
+            		e_1^\prime
+            	}
+            }
+            {
+            	\step{
+            		\ora{e_1}{e_2}
+            	}{
+            		\ora{e_1^\prime}{e_2}
+            	}
+            }
+
+            \inferrule{
+            	\expr \isVal{} \\
+            	\step{
+            		e_2
+            	}{
+            		e_2^\prime
+            	}
+            }
+            {
+            	\step{
+            		\ora{e_1}{e_2}
+            	}{
+            		\ora{e_1}{e_2^\prime}
+            	}
+            }
+        \end{mathpar}
+
+        For ``$\cmd$ \isFinal{}'': \\
+
+        ``set()'': 
+
+        \begin{mathpar}
+           \inferrule{
+                \addra{a} = \numa{n}
+            }{
+                \step{\seta{\addr}{\expr}}{\expr}
+            }
+        
+            \inferrule{
+                \addra{a} \isVal{} \\
+                \step{\expr}{\expr^\prime}
+            }{
+                \step{\seta{\addr}{\expr}}{\expr^\prime}
+            }
+        \end{mathpar}
+
+        ``skip()'': 
+
+        \begin{mathpar}
+           \inferrule{\addra{a} = \numa{n}}{
+                \step{\skipa}{\addr}
+            }
+        \end{mathpar}
+
+        ``seq()'': 
+
+        \begin{mathpar}
+            \inferrule{
+                \step{\cmd}{\texttt{ok}}
+           }{
+                \step{\seqa{\cmd_1}{\cmd_2}}{\cmd_2}
+            }
+
+            \inferrule{
+                \step{\cmd_1}{\cmd_1^\prime}
+           }{
+                \step{\seqa{\cmd_1}{\cmd_2}}{\seqa{\cmd_1^\prime}{\cmd_2}}
+            }
+
+            \inferrule{
+                \step{\cmd_2}{\cmd_2^\prime}
+           }{
+                \step{\seqa{\cmd_1}{\cmd_2}}{\seqa{\cmd_1}{\cmd_2^\prime}}
+            }
+        \end{mathpar}
+
+        ``if()'': 
+
+        \begin{mathpar}
+            \inferrule{
+                \texttt{if} \; \expr \; \texttt{then} \; \cmd_1 \; \texttt{else} \; \cmd_2
+           }{
+                \step{\ifa{\expr}{\cmd_1}{\cmd_2}}{\cmd_1 \lor \cmd_2}
+            }
+
+           \inferrule{
+                \expr \isVal{} \\  
+                \step{\expr}{\expr^\prime}
+           }{
+                \step{\ifa{\expr}{\cmd_1}{\cmd_2}}{\ifa{\expr^\prime}{\cmd_1}{\cmd_2}}
+            }
+
+           \inferrule{
+                \expr \isVal{} \\  
+                \step{\cmd_1}{\cmd_1^\prime}
+           }{
+                \step{\ifa{\expr}{\cmd_1}{\cmd_2}}{\ifa{\expr}{\cmd_1^\prime}{\cmd_2}}
+            }
+
+           \inferrule{
+                \expr \isVal{} \\  
+                \step{\cmd_2}{\cmd_2^\prime}
+           }{
+                \step{\ifa{\expr}{\cmd_1}{\cmd_2}}{\ifa{\expr}{\cmd_1}{\cmd_2^\prime}}
+            }
+        \end{mathpar}
+
+        ``while()'': 
+
+        \begin{mathpar}
+            \inferrule{
+                \texttt{while} \; \expr \; \texttt{do} \; \cmd
+           }{
+                \step{\whilea{\expr}{\cmd}}{\cmd}
+            }
+
+           \inferrule{
+                \expr = \boola{\bool} \\
+                \expr \isVal{} \\
+           }{
+                \step{\whilea{\expr}{\cmd}}{\whilea{\expr}{\cmd}}
+            }
+
+           \inferrule{
+                \step{\expr}{\expr^\prime}
+           }{
+                \step{\whilea{\expr}{\cmd}}{\whilea{\expr^\prime}{\cmd}}
+            }
+
+           \inferrule{
+                \step{\cmd}{\cmd^\prime}
+           }{
+                \step{\whilea{\expr}{\cmd}}{\whilea{\expr}{\cmd^\prime}}
+            }
+            
+        \end{mathpar}
+        
+        \item[(b)] Define the small-step semantics. \\
+        
+        For ``$\expr$'':
+        
+        \begin{mathpar}
+
+            \inferrule{ }{\step{\state{\addr}{\store}}{\store(\addr)}}
+            
+            \inferrule{ }{\step{\state{\num}{\store}}{\num}}
+
+            \inferrule{ }{\step{\state{\texttt{true}}{\store}}{\texttt{true}}}
+
+            \inferrule{ }{\step{\state{\texttt{false}}{\store}}{\texttt{false}}}
+
+            % plus
+            \inferrule{
+                \step{
+                    \state{\addr_0}{\store}
+                }{
+                    \num_0
+                } \\
+                \step{
+                    \state{\addr_1}{\store}
+                }{
+                    \num_1
+                }
+            }{
+                \step{
+                    \state{\num_0 - \num_1}{\store}
+                }{
+                    \num
+                }
+            }
+
+            % times
+            \inferrule{
+                \step{
+                    \state{\addr_0}{\store}
+                }{
+                    \num_0
+                } \\
+                \step{
+                    \state{\addr_1}{\store}
+                }{
+                    \num_1
+                }
+            }{
+                \step{
+                    \state{\num_0 \times \num_1}{\store}
+                }{
+                    \num
+                }
+            }
+
+            % equal
+            \inferrule{
+                \step{
+                    \state{\addr_0}{\store}
+                }{
+                    n
+                } \\
+                \step{
+                    \state{\addr_1}{\store}
+                }{
+                    m
+                }
+            }{
+                \step{
+                    \state{n = m}{\store}
+                }{
+                    \texttt{true}
+                }
+            }
+
+            \inferrule{
+                \step{
+                    \state{\addr_0}{\store}
+                }{
+                    n
+                } \\
+                \step{
+                    \state{\addr_1}{\store}
+                }{
+                    m
+                }
+            }{
+                \step{
+                    \state{n = m}{\store}
+                }{
+                    \texttt{false}
+                }
+            }
+
+            % less than
+            \inferrule{
+                \step{
+                    \state{\addr_0}{\store}
+                }{
+                    n
+                } \\
+                \step{
+                    \state{\addr_1}{\store}
+                }{
+                    m
+                }
+            }{
+                \step{
+                    \state{n \le m}{\store}
+                }{
+                    \texttt{true}
+                }
+            }
+
+            \inferrule{
+                \step{
+                    \state{\addr_0}{\store}
+                }{
+                    n
+                } \\
+                \step{
+                    \state{\addr_1}{\store}
+                }{
+                    m
+                }
+            }{
+                \step{
+                    \state{n \le m}{\store}
+                }{
+                    \texttt{false}
+                }
+            }
+
+            % and
+            \inferrule{
+                \step{
+                    \state{\addr_0}{\store}
+                }{
+                    \texttt{true}
+                } \\
+                \step{
+                    \state{\addr_1}{\store}
+                }{
+                    \texttt{true}
+                }
+            }{
+                \step{
+                    \state{n \land m}{\store}
+                }{
+                    \texttt{true}
+                }
+            }
+
+            \inferrule{
+                \step{
+                    \state{\addr_0}{\store}
+                }{
+                    \texttt{false}
+                } \\
+                \step{
+                    \state{\addr_1}{\store}
+                }{
+                    \texttt{true}
+                }
+            }{
+                \step{
+                    \state{n \land m}{\store}
+                }{
+                    \texttt{false}
+                }
+            }
+
+            \inferrule{
+                \step{
+                    \state{\addr_0}{\store}
+                }{
+                    \texttt{true}
+                } \\
+                \step{
+                    \state{\addr_1}{\store}
+                }{
+                    \texttt{false}
+                }
+            }{
+                \step{
+                    \state{n \land m}{\store}
+                }{
+                    \texttt{false}
+                }
+            }
+
+            % or
+            \inferrule{
+                \step{
+                    \state{\addr_0}{\store}
+                }{
+                    \texttt{true}
+                } \\
+                \step{
+                    \state{\addr_1}{\store}
+                }{
+                    \texttt{true}
+                }
+            }{
+                \step{
+                    \state{n \lor m}{\store}
+                }{
+                    \texttt{true}
+                }
+            }
+
+            \inferrule{
+                \step{
+                    \state{\addr_0}{\store}
+                }{
+                    \texttt{true}
+                } \\
+                \step{
+                    \state{\addr_1}{\store}                }{
+                    \texttt{false}
+                }
+            }{
+                \step{
+                    \state{n \lor m}{\store}
+                }{
+                    \texttt{true}
+                }
+            }
+
+            \inferrule{
+                \step{
+                    \state{\addr_0}{\store}
+                }{
+                    \texttt{false}
+                } \\
+                \step{
+                    \state{\addr_1}{\store}
+                }{
+                    \texttt{true}
+                }
+            }{
+                \step{
+                    \state{n \lor m}{\store}
+                }{
+                    \texttt{true}
+                }
+            }
+
+            \inferrule{
+                \step{
+                    \state{\addr_0}{\store}
+                }{
+                    \texttt{false}
+                } \\
+                \step{
+                    \state{\addr_1}{\store}
+                }{
+                    \texttt{false}
+                }
+            }{
+                \step{
+                    \state{n \lor m}{\store}
+                }{
+                    \texttt{false}
+                }
+            }
+
+        \end{mathpar}
+        For ``$\cmd$'':
+            
+        \begin{mathpar}
+
+            % set
+            \inferrule{
+                \step{\state{\addr}{\store}}{\store(\addr)} \\
+                \step{\state{\expr}{\store}}{\expr}
+            }{
+                \step{
+                    \state{\addr}{\store}
+                }{
+                    \state{\expr}{\store}
+                }
+            }
+
+            % skip
+            \inferrule{
+            }{
+                \step{
+                    \state{\skipa}{\store}
+                }{
+                    \store
+                }
+            }  
+
+            % seq
+            \inferrule{
+                \step{\state{\cmd_0}{\store}}{\store^{\prime \prime}} \\
+                \step{\state{\cmd_1}{\store^{\prime \prime}}}{\store^{\prime}}
+            }{
+                \step{\state{\cmd_0 \; \text{;} \; \cmd_1}{\store}}{\store^\prime}
+            }
+
+            % if
+            \inferrule{
+                \step{\state{\bool}{\store}}{\texttt{true}} \\
+                \step{\state{\cmd_0}{\store}}{\store^{\prime}}
+            }{
+                \step{\state{\textbf{if} \; \bool \; \textbf{then} \; \cmd_0 \; \textbf{else} \; \cmd_1}{\store}}{\store^\prime}
+            }
+
+            \inferrule{
+                \step{\state{\bool}{\store}}{\texttt{false}} \\
+                \step{\state{\cmd_0}{\store}}{\store^{\prime}}
+            }{
+                \step{\state{\textbf{if} \; \bool \; \textbf{then} \; \cmd_0 \; \textbf{else} \; \cmd_1}{\store}}{\store^\prime}
+            }
+
+            % while
+            \inferrule{
+                \step{\state{\bool}{\store}}{\texttt{false}}
+            }{
+                \step{\state{\textbf{while} \; \bool \; \textbf{do} \; \cmd}{\store}}{\store}
+            }
+
+            \inferrule{
+                \step{\state{\bool}{\store}}{\texttt{true}} \\
+                \step{\state{\cmd}{\store}}{\store^{\prime \prime}} \\
+                \step{\state{\textbf{while} \; \bool \; \textbf{do} \; \cmd}{\store^{\prime \prime}}}{\store^\prime}
+            }{
+                \step{
+                    \state{\textbf{while} \; \bool \; \textbf{do} \; \cmd}{\store}
+                }{
+                    \store^\prime
+                }
+            }
+            \end{mathpar}
+            \item[(c)]
+            \begin{itemize}
+                \item[i.] Canonical Form Lemmas \\
+
+                If $\expr \isVal{}$ and $\hasType{\expr}{\tau}$, then \\
+
+                \begin{enumerate}
+                    \item If $\tau = \numtyp$, then $\expr = \numa{n}$ for some number $\num$.
+                    \item If $\tau = \booltyp$, then $\expr = \boola{b}$ for some boolean $\bool$.
+                \end{enumerate} 
+
+                This is basically saying that our expressions and commands are well-typed, meaning, for 1 and 2, if our expression evaluates and the type is $\numtyp$ or $\booltyp$ (respectively), then the evaluated expression $\expr$'s output is also of that type.
+                \\
+                \item[ii.] Progress and Preservation. \\
+
+                \textit{Progress}: $\forall \expr \in \Expr,$ either $\expr \isVal{}$ or $\exists \; \expr^\prime \; \text{:} \; \step{\expr}{\expr^\prime}$. \\
+                
+                Progress says that our expressions are well-typed, and that we can transition from expression to expression knowing that the types of one expression are compatible with the others they may encounter. Progress enables a program to not ``get stuck.''
+                \\
+                
+                \textit{Preservation}: If $\hasType{\expr}{\typ}$ and $\step{\expr}{\expr^\prime}$, then $\hasType{\expr^\prime}{\typ}$. \\
+
+                Preservation is the idea that our expressions are well-typed consistently. This allows us to use induction on our proofs because, if one instance of an expression has a type, than all other instances of that expression must have the same type. \\
+
+                \item [iii.] Prove progress and preservation for commands. \\
+
+                \textit{Progress}: $\forall \cmd \in \Cmd,$ either $\cmd \isFinal{}$ or $\exists \; \cmd^\prime \; \text{:} \; \step{\cmd}{\cmd^\prime}$. \\
+
+                Progress is proved by the statics in 1.1. For example, if $\hasType{\cmd_1}{\typ}$ and $\hasType{\cmd_2}{\typ}$, then $\hasType{\seqa{\cmd_1}{\cmd_2}}{\typ}$. Since all of our commands are well-typed, progress is achieved. \\
+
+                \textit{Preservation}: If $\hasType{\cmd}{\typ}$ and $\step{\cmd}{\cmd^\prime}$, then $\hasType{\cmd^\prime}{\typ}$. \\
+
+                Preservation is proven with our dynamics. For example, since $\step{\cmd}{\texttt{ok}}$ and $\step{\seqa{\cmd_1}{\cmd_2}}{\cmd_2}$, know that $\step{\seqa{\cmd_1}{\cmd_2}}{\seqa{\cmd_1^\prime}{\cmd_2}}$ for all $\cmd \in \Cmd$.
+            \end{itemize}
+        \item[(d)] Did not have time.
+        \item[(e)] Did not have time.
     \end{itemize}
 \end{questions}
 
 \section{Language Implementation: \ETPS}
 
-See \texttt{hw02.ml} and \texttt{test\_hw02.ml}.
+See \texttt{hw02.ml} and \texttt{test\_hw02.ml}. \\
+
+I was able to download and start learning OCaml via ``https://v2.ocaml.org/learn/tutorials/a\_first\_hour\_with\_ocaml.html'', but I did not have time to even start the unit tests even though I understand the concepts. It's the grammar of proving them in OCaml that took an undue amount of time.
 
 \section{Final Project Preparation: Pre-Proposal}
 
 \begin{questions}
-  \question
+    \question I'm working with Matt Buchholz and we're thinking about how PL verification can be applied to LLMs to ensure their outputs are well-formed. Below is the synopsis. \\
+
+    \textbf{Basic problem:} Can a language model trained to perform some task with code (like e.g. GitHub Copilot's code 'auto-complete' feature) be improved with constraints on the well-formedness of their outputs.
+    
+    We draw inspiration from related work in natural languages, where e.g. Tziafas et al.  \cite{Tziafas} show that pre-training a BERT-based model on a part-of-speech tagging-like task improves downstream performance on other tasks. We could apply a similar approach, but instead of using the grammatical parse of natural language, we could train the model on a similar task with the syntactic parse of code. Or, we could follow an approach similar to Han et al. \cite{han-etal-2019-joint}, by using ILP formulations about the syntactic well-formedness of a program to constrain some of the model's optimization.
+    Liu et al. \cite{liu2023code} do something similar, formulating 'code execution' as a pre-training task, and demonstrating a model pre-trained on that task performs better on downstream tasks, such as natural language-to-code translation.
+    
+    We're still in the exploratory phase of the project; it's unclear how feasible this project is, since we're not familiar with the availability of open-source models for working with code or datasets for any training or benchmarking tasks. (And we're not going to try to train something from scratch.) Though, Wang et al. \cite{wang2023codet5} seems to point to (at least some) models and datasets being readily available, including the CodeT5+ model they introduce.
+    
+    
+    For context: we \emph{did} try to scan the papers of top PL conferences, but found papers which were largely not interesting to us (or beyond our understanding of PL such that it's hard to gauge the difficulty or novelty of a paper's achievement). Since we both have backgrounds in AI, something at the intersection of PL and AI seems most appropriate.
+
+    \bibliography{refs}
+    \bibliographystyle{IEEEtran}
 \end{questions}
 
 %% Appendix
